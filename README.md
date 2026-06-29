@@ -37,7 +37,7 @@ The [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) is an open 
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/edc-mcp.git
+git clone https://github.com/soofi-project/edc-mcp.git
 cd edc-mcp
 
 # Create a virtual environment
@@ -51,27 +51,46 @@ pip install -e .
 ### Using Docker
 
 ```bash
+# Pull the published multi-architecture image
+docker pull ghcr.io/soofi-project/edc-mcp:latest
+
+# Run the container
+docker run --rm -p 8081:8081 \
+  -e EDC_MANAGEMENT_URL=http://host.docker.internal:5173/api/management \
+  -e EDC_CATALOG_URL=http://host.docker.internal:5173/api/catalog \
+  ghcr.io/soofi-project/edc-mcp:latest
+```
+
+Replace `host.docker.internal` with the hostname or service name that is reachable from the container.
+
+For local image development:
+
+```bash
 # Build the image
 docker build -t edc-mcp .
 
 # Run the container
-docker run -p 8081:8081 edc-mcp
+docker run --rm -p 8081:8081 \
+  -e EDC_MANAGEMENT_URL=http://host.docker.internal:5173/api/management \
+  -e EDC_CATALOG_URL=http://host.docker.internal:5173/api/catalog \
+  edc-mcp
 ```
 
 ## Configuration
 
-The server requires the following environment variables to connect to your EDC instance:
+Set the following environment variables before starting the server:
 
-- `EDC_MANAGEMENT_URL`: EDC Management API endpoint (default: `http://localhost:19193/management`)
-- `EDC_API_KEY`: API key for authentication (default: `ApiKeyDefaultValue`)
-- `EDC_PROTOCOL_URL`: Protocol endpoint URL (default: `http://localhost:19194/protocol`)
+- `EDC_MANAGEMENT_URL`: EDC Management API endpoint (default: `http://localhost:5173/api/management`)
+- `EDC_CATALOG_URL`: EDC catalog API endpoint used for federated catalog refreshes (default: `http://localhost:5173/api/catalog`)
+- `CATALOG_REFRESH_INTERVAL`: Federated catalog refresh interval in seconds (default: `300`)
+- `CATALOG_BASE_URI`: Base URI used when parsing catalog JSON-LD into RDF (default: `urn:edc:catalog/`)
+- `LOG_LEVEL`: Python log level for this server (default: `INFO`)
 
-Set these in your environment or create a `.env` file:
+Example:
 
 ```bash
-export EDC_MANAGEMENT_URL=http://your-edc-instance:19193/management
-export EDC_API_KEY=your-api-key
-export EDC_PROTOCOL_URL=http://your-edc-instance:19194/protocol
+export EDC_MANAGEMENT_URL=http://localhost:5173/api/management
+export EDC_CATALOG_URL=http://localhost:5173/api/catalog
 ```
 
 ## Usage
@@ -96,7 +115,7 @@ Add to your Claude Desktop configuration (`claude_desktop_config.json`):
 {
   "mcpServers": {
     "edc": {
-      "url": "http://localhost:8081/mcp/v1"
+      "url": "http://localhost:8081/mcp"
     }
   }
 }
